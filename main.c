@@ -52,31 +52,31 @@ HeapNode *copy_tree(HeapNode *copy, HeapNode *original)
 }
 
 
-	
+
 int size_of_heap(HeapNode * node)
-{	
+{
 	int size = 0; // can be initialised to any value so if you want 0, place it to zero
-	
+
 	if (node != NULL)
-	{	if (node->key != 0)
+	{	if (node->key != 0) // sibling created can have 0 key
 		{
 			size++;
 		}
 		else return size;
-	
+
 	}
-	else 
+	else
 	{
 		return size;
 	}
-	//printf (" PRE he current node and size is %d %d \n", node->key, size);
+	printf (" The current node and size is %d %d \n", node->key, size);
     size =  size + size_of_heap(node->child) + size_of_heap(node->sibling);
    // printf (" Post he current node and size is %d %d \n \n", node->key, size);
 	return size;
 }
-	
-	
-	
+
+
+
 
 
 
@@ -119,7 +119,7 @@ BinomialHeap *createHeap(int f,int g,int h, int i, int j)
 // merge 2 heaps
 BinomialHeap *merge_heaps(BinomialHeap *H1, BinomialHeap *H2)
 {	BinomialHeap *myheap = newHeap();
-	HeapNode * cp1, *cp2 , *cp3, *temp_pointer;
+	HeapNode * cp1, *cp2 , *cp3;
 	cp1 = H1->head;
 	cp2 = H2->head;
 	myheap->head = newHeapNode (0, NULL,NULL,0, NULL);
@@ -152,7 +152,7 @@ BinomialHeap *merge_heaps(BinomialHeap *H1, BinomialHeap *H2)
 		cp1 = cp1->sibling;
 		cp3->sibling =  newHeapNode (0, NULL,NULL,0, NULL);
 		cp3 = cp3->sibling;
-		
+
 	}
 
 	while (cp2!= NULL)
@@ -162,107 +162,110 @@ BinomialHeap *merge_heaps(BinomialHeap *H1, BinomialHeap *H2)
 		cp3->sibling =  newHeapNode (0, NULL,NULL,0, NULL);
 		cp3 = cp3->sibling;
 	}
-	
-	free(temp_pointer);
+
+
 	return myheap;
 }
 
 
 
-// Ask about complete trees ?
+
+
+// Ask about complete trees --> Binomial trees only need to satisfy heap property,  with parent less then children,
 // Link two trees of same degree
-HeapNode *link_heap_node(*HeapNode y, *HeapNode z)
-{	
-	if (y->key < z->key)
+HeapNode *link_heap_node(HeapNode *y, HeapNode *z)
+{
+	if (y->key > z->key)
 	{
 		y->parent = z;
 		y->sibling = z->child;
 		z->child = y;
 		z->degree ++;
 		return z;
-		
+
 	}
-	
-	else 
-	{   
-		z->parent = y;
+
+	else
+	{
+		z->parent = y; // 10 should be parent
 		z->sibling = y->child;
 		y->child = z;
 		y->degree ++;
 		return y;
 	}
-	
+
 }
 
 
 
 
-BinomialHeap *union_heap(*BinomialHeap H1, *BinomialHeap H2)
+BinomialHeap *union_heap(BinomialHeap *H1, BinomialHeap *H2)
 {
-	HeapNode *newHeap = newHeap();
-	newHeap = merge_heaps(H1, H2);
+	BinomialHeap *newheap = newHeap();
+	newheap = merge_heaps(H1, H2);
 	HeapNode *prev_x;
     HeapNode *next_x;
-    HeapNode *x, *temp_p  *temp_p2  ;
+    HeapNode *x, *temp_p,  *temp_p2;
     // case when merged heap is empty
-    if (newHeap->Head == NULL)
+    if (newheap->head == NULL)
     {
-    	return newHeap;
+    	return newheap;
     }
-    x = newHeap->head;
+    x = newheap->head;
     next_x = x->sibling;
     prev_x = NULL;   // initially the first root
     //  Binomial Heap has at most one root of given degree, if there are 2 roots then they would form a new Tree with degree + 1
     // hence the merge will have at most 2 trees of same degree
     // If same degree then they are adjacent, ask why, I think because all in increasing order, hence if same then next to each other
-	
-	while (next_x != NULL) 
+
+	while (next_x != NULL)
 	{
-		// case 2
-        if ((x->degree != next_x->degree) || ((next_x->sibling != NULL)
-                && (next_x->sibling)->degree == x->degree) && (x->degree == next_x->degree)) 
+		// case 1
+        if ((x->degree != next_x->degree) /* this is to keep x moving if degree is not same, case */   ||
+           // case 2
+           ((next_x->sibling != NULL) && (next_x->sibling->degree == next_x->degree)))
         {
             prev_x = x;
             x = next_x;
-        } 
-        else if (x->degree == next_x->degree) // ASK
+        }
+        else
         {	// case 3
-        		temp_p2 = prev_x;
+        		//temp_p2 = prev_x; //keep track
                 temp_p = next_x->sibling;
-                
+
                 x = link_heap_node(next_x, x);
                 x->sibling = temp_p;
-         
-            	if (temp_p2 == NULL)
+				// see if start of heap or not
+
+            	if (prev_x == NULL)
         		 {
-            		x->prev_x = temp_p2;
-            		newHeap->head = x;
+            		//prev_x = temp_p2;
+            		newheap->head = x;
     			 }
-            
-            	else if (temp_p2 != NULL)
+
+            	else if (prev_x != NULL)
             	{
-            		x->prev_x = temp_p2;
+            		prev_x->sibling = x;
             	}
- 
+
          }
-        
+
         next_x = x->sibling;
     }
-    return newHeap;
+    return newheap;
 }
-	
-// Ask why only key taken	
+
+// Ask why only key taken
 BinomialHeap *insert_node(BinomialHeap *H, HeapNode *x)
 {
-   BinomialHeap *newHeap = newHeap();
-   int key = x->key
+   BinomialHeap *newheap = newHeap();
+   int key = x->key;
    HeapNode *new_node = newHeapNode (key, NULL,NULL,0, NULL);
-   newHeap->head = new_node;
-   H = union_heap(H,H1);
+   newheap->head = new_node;
+   H = union_heap(H,newheap);
    return H;
-}	
-	
-	
+}
+
 
 
 
@@ -282,21 +285,68 @@ BinomialHeap *insert_node(BinomialHeap *H, HeapNode *x)
 
 int main() //sample main for testing
 {
-	BinomialHeap * heap, *heap2, *combheap;
+	BinomialHeap * heap, *heap2, *combheap; //*tempheap;
+	HeapNode *temp_node;
 	heap = createHeap(10,1,12,25,18);
-	heap->size = 5;
+	//heap->size = 5;
 	/*printf("first is %d, second is %d third is %d fourth is %d fifth is %d \n", heap->head->key, heap->head->sibling->key,
 	heap->head->sibling->child->key, heap->head->sibling->child->sibling ->key,heap->head->sibling->child->child ->key);*/
 	heap2 = createHeap(15,8,20,26,30);
-	heap2->size = 5;
+	//heap2->size = 5;
 	/*printf("first is %d, second is %d third is %d fourth is %d fifth is %d \n", heap2->head->key, heap2->head->sibling->key,
 	heap2->head->sibling->child->key, heap2->head->sibling->child->sibling ->key,heap2->head->sibling->child->child ->key);*/
 	combheap = merge_heaps(heap, heap2); // works
-	combheap->size = 10;
-	printf("size is %d \n", size_of_heap(combheap->head));
+	//combheap->size = 10;
+	printf("runnn %d \n \n", size_of_heap(combheap->head));
+	//temp_node = link_heap_node(heap->head->sibling, heap2->head->sibling);
+	//tempheap = union_heap(heap,heap2);
+
+
+
+
+
+
 
 	free(heap);
 	free (heap2);
     free (combheap);
 	return 0;
 }
+
+
+
+
+/* TEST Summary
+Merge works
+link works
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
