@@ -1,0 +1,4 @@
+// Always define a pointer to NULL and also allocate memory in malloc before accessing it
+// no need to compare size, run till one is null then appendix other
+// unequal sign for this assignment contents of the address that is pointing to cp3
+// 
